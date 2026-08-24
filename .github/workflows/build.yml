@@ -1,4 +1,4 @@
-name: Build Mod
+name: Build JumpReset
 
 on:
   push:
@@ -17,16 +17,15 @@ jobs:
         with:
           distribution: temurin
           java-version: '8'
-          cache: gradle
 
-      - name: Give Gradle permission
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build
-        run: ./gradlew build --no-daemon
+        run: gradle build --no-daemon
 
-      - name: Upload Mod
+      - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
-          name: jumpreset-modv2
+          name: JumpReset
           path: build/libs/*.jar
