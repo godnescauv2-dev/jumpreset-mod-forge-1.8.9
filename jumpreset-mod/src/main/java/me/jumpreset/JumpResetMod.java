@@ -22,17 +22,15 @@ public class JumpResetMod {
 
     public static boolean enabled = true;
 
-    // --- CONFIG (como Vape V4) ---
-    public static double strength = 85.0;    // % de redução do KB (0-100%)
-    public static double chance = 85.0;      // % de chance de ativar
-    public static int minDelay = 0;           // ticks mínimos entre resets
-    public static int maxDelay = 1;           // ticks máximos entre resets (random)
+    // Config (ajustável por comando)
+    public static double strength = 85.0;  // 0-100%
+    public static double chance = 85.0;    // 0-100%
+    public static int minDelay = 0;
+    public static int maxDelay = 1;
 
     // Estado interno
-    private int ticksSinceLastReset = 0;
     private int delayBeforeNext = 0;
     private int hurtTimePrev = 0;
-    private boolean wasInAir = false;
 
     private static JumpResetMod instance;
 
@@ -62,68 +60,52 @@ public class JumpResetMod {
 
         EntityPlayerSP player = (EntityPlayerSP) event.player;
 
-        // --- 1. Delay entre ativações ---
+        // Delay entre ativações
         if (delayBeforeNext > 0) {
             delayBeforeNext--;
             return;
         }
 
-        // --- 2. Só ativa se tomou dano NOVO (hurtTime mudou de 0 para >0) ---
+        // Detecta dano novo
         int currentHurt = player.hurtTime;
         boolean justGotHit = (currentHurt > 0 && hurtTimePrev == 0);
         hurtTimePrev = currentHurt;
 
         if (!justGotHit) return;
 
-        // --- 3. Chance de ativar (Vape V4 nunca ativa 100% das vezes) ---
+        // Chance
         if (!checkChance()) return;
 
-        // --- 4. Só ativa no chão (Vape não reseta no ar) ---
+        // Só no chão
         if (!player.onGround) return;
 
-        // --- 5. Executa o jump reset REDUZIDO (estilo Vape V4) ---
-        applyVapeJumpReset(player);
+        // Aplica jump reset reduzido
+        applyJumpReset(player);
 
-        // --- 6. Seta delay aleatório para não ser detectado ---
+        // Delay aleatório anti-padrão
         delayBeforeNext = minDelay + ThreadLocalRandom.current().nextInt(maxDelay - minDelay + 1);
-        ticksSinceLastReset = 0;
     }
 
-    /**
-     * Aplica o jump reset IGUAL ao Vape V4:
-     * - Reduz motionX/motionZ (não zera)
-     * - Reseta motionY
-     * - Pula
-     */
-    private void applyVapeJumpReset(EntityPlayerSP player) {
-        double reduction = strength / 100.0; // 0.0 a 1.0
+    private void applyJumpReset(EntityPlayerSP player) {
+        double reduction = strength / 100.0;
 
-        // Salva a velocity original
         double origX = player.motionX;
         double origZ = player.motionZ;
-        double origY = player.motionY;
 
-        // --- REDUZ motionX/motionZ (não zera!) ---
-        // Vape V4 reduz em ~80-85% e mantém 15-20% para o servidor ver
+        // Reduz motionX/motionZ (não zera!)
         player.motionX = origX * (1.0 - reduction);
         player.motionZ = origZ * (1.0 - reduction);
 
-        // --- Reseta motionY (sempre) ---
+        // Reseta motionY e pula
         player.motionY = 0;
-
-        // --- Pula instantaneamente ---
         player.jump();
 
-        // --- Adiciona um pequeno desvio aleatório na velocity reduzida ---
-        // para não gerar padrão detectável
+        // Jitter para evitar padrão
         double jitter = ThreadLocalRandom.current().nextDouble(-0.005, 0.005);
         player.motionX += jitter;
         player.motionZ += jitter;
     }
 
-    /**
-     * Chance com randomização natural (Vape usa ThreadLocalRandom)
-     */
     private boolean checkChance() {
         if (chance >= 100.0) return true;
         if (chance <= 0.0) return false;
