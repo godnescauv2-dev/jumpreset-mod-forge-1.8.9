@@ -1,10 +1,12 @@
 name: Build Mod
 
-on: [push, workflow_dispatch]
+on:
+  push:
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -15,17 +17,15 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
 
-      - name: Install Gradle 2.14.1
-        run: |
-          wget https://services.gradle.org/distributions/gradle-2.14.1-bin.zip
-          unzip -q gradle-2.14.1-bin.zip
-          echo "$PWD/gradle-2.14.1/bin" >> $GITHUB_PATH
+      - name: Grant execute permission
+        run: chmod +x jumpreset-mod/gradlew
 
       - name: Build
-        run: gradle build --no-daemon
+        working-directory: jumpreset-mod
+        run: ./gradlew build --no-daemon
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: JumpResetMod
-          path: build/libs/*.jar
+          path: jumpreset-mod/build/libs/*.jar
