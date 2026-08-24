@@ -1,0 +1,12 @@
+[
+  {
+    "modid": "jumpresetv4",
+    "name": "Jump Reset V4",
+    "description": "Jump reset estilo Vape V4 - reduz knockback em ate 85% sem lagback. By /jumpreset",
+    "version": "1.0.0",
+    "mcversion": "1.8.9",
+    "url": "https://github.com/SEU_USUARIO/jumpreset-mod",
+    "authorList": ["connectedCHEAT"],
+    "credits": ""
+  }
+]
